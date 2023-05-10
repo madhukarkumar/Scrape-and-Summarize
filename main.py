@@ -61,7 +61,7 @@ def main():
     st.title("Website Scraper and Summarizer")
     #create an H2 subheader
     st.subheader("This app uses Langchain and OpenAI to scrape a website and summarize it using GPT-3.")
-    st.write("Please enter a website URL and your OpenAI API Key to get started.")
+    st.write("Please enter a website URL and the app will scrape, then chunk the data and send to OpenAI to summarize.")
 
     with st.sidebar: # Create a sidebar
         url_input = st.text_input("Enter the website URL:")
