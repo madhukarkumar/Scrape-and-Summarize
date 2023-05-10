@@ -10,6 +10,7 @@ from langchain import agents
 from langchain.docstore.document import Document
 from nltk.tokenize import sent_tokenize
 import nltk
+import os
 nltk.download('punkt')  # Download the NLTK Punkt tokenizer if it's not already present
 
 # Function to scrape the given website
@@ -39,8 +40,9 @@ def split_text(text, max_tokens):
     return chunks
 
 # Function to get the summary of the text
-def get_summary(api_key, text):
-    llm = OpenAI(openai_api_key=api_key) # Create an OpenAI object
+def get_summary(text):
+    OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY") # Get the OpenAI API Key from the environment variables
+    llm = OpenAI(openai_api_key=OPENAI_API_KEY) # Create an OpenAI object
     chain = load_summarize_chain(llm, chain_type="map_reduce") # Load the summarization chain
     
     max_tokens = 4097 - 256  # 256 tokens reserved for completion
@@ -63,28 +65,28 @@ def main():
 
     with st.sidebar: # Create a sidebar
         url_input = st.text_input("Enter the website URL:")
-        api_key_input = st.text_input("Enter your OpenAI API Key:")
-        scrape_button = st.button("Scrape", key="scrape")
+        #api_key_input = st.text_input("Enter your OpenAI API Key:")
+        #scrape_button = st.button("Scrape", key="scrape")
         summarize_button = st.button("Summarize with GPT", key="summarize")
 
     extracted_text = None
 
     # Check if the scrape button was clicked
-    if scrape_button:
-        if not url_input:
-            st.error("Please enter a website URL.")
-        else:
-            try:
-                extracted_text = scrape_website(url_input) # Scrape the website
-                st.write(extracted_text) # Display the extracted text
-            except Exception as e:
-                st.error(f"Error: {e}")
+    #if scrape_button:
+    #    if not url_input:
+    #        st.error("Please enter a website URL.")
+    #    else:
+    #        try:
+    #            extracted_text = scrape_website(url_input) # Scrape the website
+    #            st.write(extracted_text) # Display the extracted text
+    #        except Exception as e:
+    #            st.error(f"Error: {e}")
 
     if summarize_button:
         if not url_input:
             st.error("Please enter a website URL.")
-        elif not api_key_input:
-            st.error("Please enter your OpenAI API Key.")
+        #elif not api_key_input:
+            #st.error("Please enter your OpenAI API Key.")
         else:
             if not extracted_text:
                 try:
@@ -93,7 +95,7 @@ def main():
                     st.error(f"Error: {e}")
 
             try:
-                summaries = get_summary(api_key_input, extracted_text) # Get the summaries by passing the extracted text 
+                summaries = get_summary(extracted_text) # Get the summaries by passing the extracted text 
                 combined_summary = " ".join(summaries) # Combine the summaries into a single string
                 st.write(combined_summary) # Display the combined summary
             except Exception as e:
