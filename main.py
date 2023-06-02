@@ -56,7 +56,7 @@ def get_summary(text):
     return summaries
 
 def main():
-    st.title("Website Scraper, Summarizer and PDF Inquirer")
+    st.title("Website Summarizer and PDF Inquirer")
 
     page = st.sidebar.selectbox(
         "Choose a page",
