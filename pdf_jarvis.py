@@ -162,8 +162,8 @@ def main():
                 llm = ChatOpenAI()
                 # llm = HuggingFaceHub(repo_id="google/flan-t5-xxl", model_kwargs={"temperature":0.5, "max_length":512})
                 memory = ConversationBufferMemory(memory_key='chat_history', return_messages=True)
-                vectorstore = get_vectorstore(text_chunks)
-                st.session_state.conversation = ConversationalRetrievalChain.from_llm(llm=llm, retriever=vectorstore.as_retriever(), memory=memory)
+                #vectorstore = get_vectorstore(text_chunks)
+                #st.session_state.conversation = ConversationalRetrievalChain.from_llm(llm=llm, retriever=vectorstore.as_retriever(), memory=memory)
 
                 st.success('PDFs processed successfully!')
 
