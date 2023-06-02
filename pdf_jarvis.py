@@ -13,6 +13,7 @@ from langchain.llms import HuggingFaceHub
 import sqlalchemy as db
 import os
 from sqlalchemy import text as sql_text
+from collections import deque
 
 #Initialize OpenAIEmbeddings
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
@@ -83,40 +84,69 @@ def get_conversation_chain(vectorstore):
     )
     return conversation_chain
 
+# function to get similar text from the SingleStore embeddings table
+def get_most_similar_text(query_text):
+    # Convert the query text to embeddings
+    query_embedding = embedder.embed_documents([query_text])[0]
 
+    # Perform a similarity search against the embeddings
+    stmt = sql_text("""
+        SELECT
+            text,
+            DOT_PRODUCT_F32(JSON_ARRAY_PACK_F32(:embeddings), embeddings) AS similarity
+        FROM multiple_pdf_example
+        ORDER BY similarity DESC
+        LIMIT 1
+    """)
+
+    password = os.environ.get("SINGLESTORE_PASSWORD")
+    connection = db.create_engine(
+        f"mysql+pymysql://admin:{password}@svc-bdaf1a6b-098e-47a4-97c7-01d3b678e08d-dml.aws-virginia-6.svc.singlestore.com:3306/winter_wikipedia")
+    with connection.begin() as conn:
+        result = conn.execute(stmt, {"embeddings": str(query_embedding)}).fetchone()
+
+    return result[0]
+
+
+# new handle_userinput function that uses the SingleStore embeddings table
 def handle_userinput(user_question):
-    response = st.session_state.conversation({'question': user_question})
-    st.session_state.chat_history = response['chat_history']
+    with st.spinner('Processing your question...'):
+        most_similar_text = get_most_similar_text(user_question)
+        
+        # Pass the most similar text from the book as a part of the prompt to ChatGPT
+        prompt = f"The user asked: {user_question}. The most similar text from the documents is: {most_similar_text}"
+        
+        response = st.session_state.conversation({'question': prompt})
+        
+        # Add the new messages at the beginning of the deque
+        for message in reversed(response['chat_history']):
+            st.session_state.chat_history.appendleft(message)
 
-    for i, message in enumerate(st.session_state.chat_history):
-        if i % 2 == 0:
-            st.write(user_template.replace(
-                "{{MSG}}", message.content), unsafe_allow_html=True)
-        else:
-            st.write(bot_template.replace(
-                "{{MSG}}", message.content), unsafe_allow_html=True)
+        for i, message in enumerate(st.session_state.chat_history):
+            if i % 2 == 0:
+                st.write(user_template.replace(
+                    "{{MSG}}", message.content), unsafe_allow_html=True)
+            else:
+                st.write(bot_template.replace(
+                    "{{MSG}}", message.content), unsafe_allow_html=True)
+
+
 
 
 def main():
     load_dotenv()
-    #st.set_page_config(page_title="Chat with multiple PDFs",
-    #                   page_icon=":books:")
-    #st.write(css, unsafe_allow_html=True)
 
     if "conversation" not in st.session_state:
         st.session_state.conversation = None
     if "chat_history" not in st.session_state:
-        st.session_state.chat_history = None
+        st.session_state.chat_history = deque(maxlen=100)
 
     st.header("Chat with multiple PDFs :books:")
     user_question = st.text_input("Ask a question about your documents:")
-    if user_question:
-        handle_userinput(user_question)
 
     with st.sidebar:
         st.subheader("Your documents")
-        pdf_docs = st.file_uploader(
-            "Upload your PDFs here and click on 'Process'", accept_multiple_files=True)
+        pdf_docs = st.file_uploader("Upload your PDFs here and click on 'Process'", accept_multiple_files=True)
         if st.button("Process"):
             with st.spinner("Processing"):
                 # get pdf text
@@ -125,16 +155,24 @@ def main():
                 # get the text chunks
                 text_chunks = get_text_chunks(raw_text)
 
-                # Test the function
-                text_chunks = ["This is a test.", "This is another test."]
+                # pass the text chunks to create_embeddings_and_insert in order to create embeddings and insert them into a table in SingleStore                
                 create_embeddings_and_insert(text_chunks)
 
-                # create vector store
+                # Initialize the conversation chain here
+                llm = ChatOpenAI()
+                # llm = HuggingFaceHub(repo_id="google/flan-t5-xxl", model_kwargs={"temperature":0.5, "max_length":512})
+                memory = ConversationBufferMemory(memory_key='chat_history', return_messages=True)
                 vectorstore = get_vectorstore(text_chunks)
+                st.session_state.conversation = ConversationalRetrievalChain.from_llm(llm=llm, retriever=vectorstore.as_retriever(), memory=memory)
 
-                # create conversation chain
-                st.session_state.conversation = get_conversation_chain(
-                    vectorstore)
+                st.success('PDFs processed successfully!')
+
+    # Enable the user to ask a question only after the PDFs have been processed
+    if st.session_state.conversation:
+        if user_question:
+            handle_userinput(user_question)
+
+
 
 
 #if __name__ == '__main__':
