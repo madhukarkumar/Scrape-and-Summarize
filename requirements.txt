@@ -1,8 +1,9 @@
 beautifulsoup4==4.12.2
-langchain==0.0.188
+langchain==0.0.189
 nltk==3.8.1
 openai==0.27.6
 PyPDF2==3.0.1
 python-dotenv==1.0.0
 Requests==2.31.0
 SQLAlchemy==2.0.12
+pymsql==1.0.3
