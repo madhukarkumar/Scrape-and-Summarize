@@ -7,3 +7,4 @@ python-dotenv==1.0.0
 Requests==2.31.0
 SQLAlchemy==2.0.12
 pymysql
+tiktoken
