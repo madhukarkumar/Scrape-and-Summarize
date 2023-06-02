@@ -11,10 +11,12 @@ from htmlTemplates import css, bot_template, user_template
 from langchain.llms import HuggingFaceHub
 # for creating embeddings and inserting them into a table in SingleStore
 import sqlalchemy as db
+import os
 from sqlalchemy import text as sql_text
 
 #Initialize OpenAIEmbeddings
-embedder = OpenAIEmbeddings(openai_api_key="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")#TODO: replace with your API key
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
+embedder = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)#TODO: replace with your API key
 
 def get_pdf_text(pdf_docs):
     text = ""
@@ -44,8 +46,9 @@ def get_vectorstore(text_chunks):
 
 #function that takes a list of text chunks, creates embeddings and inserts them into a table in SingleStore
 def create_embeddings_and_insert(text_chunks):
+    password = os.environ.get("SINGLESTORE_PASSWORD")
     connection = db.create_engine(
-        "mysql+pymysql://admin:bIM2J78ZKZDeDetiwzLifEkfddtNA8nK@svc-bdaf1a6b-098e-47a4-97c7-01d3b678e08d-dml.aws-virginia-6.svc.singlestore.com:3306/winter_wikipedia")
+        f"mysql+pymysql://admin:{password}@svc-bdaf1a6b-098e-47a4-97c7-01d3b678e08d-dml.aws-virginia-6.svc.singlestore.com:3306/winter_wikipedia")
     with connection.begin() as conn:
         # Iterate over the text chunks
         for i, text in enumerate(text_chunks):
