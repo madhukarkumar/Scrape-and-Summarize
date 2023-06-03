@@ -116,6 +116,9 @@ def handle_userinput(user_question):
         # Pass the most similar text from the book as a part of the prompt to ChatGPT
         prompt = f"The user asked: {user_question}. The most similar text from the documents is: {most_similar_text}"
         
+        #print prompt
+        st.write(prompt)
+
         response = st.session_state.conversation({'question': prompt})
         
         # Add the new messages at the beginning of the deque
@@ -162,14 +165,15 @@ def main():
                 llm = ChatOpenAI()
                 # llm = HuggingFaceHub(repo_id="google/flan-t5-xxl", model_kwargs={"temperature":0.5, "max_length":512})
                 memory = ConversationBufferMemory(memory_key='chat_history', return_messages=True)
-                #vectorstore = get_vectorstore(text_chunks)
-                #st.session_state.conversation = ConversationalRetrievalChain.from_llm(llm=llm, retriever=vectorstore.as_retriever(), memory=memory)
+                vectorstore = get_vectorstore(text_chunks)
+                st.session_state.conversation = ConversationalRetrievalChain.from_llm(llm=llm, retriever=vectorstore.as_retriever(), memory=memory)
 
                 st.success('PDFs processed successfully!')
 
     # Enable the user to ask a question only after the PDFs have been processed
     if st.session_state.conversation:
         if user_question:
+            st.write(user_question)
             handle_userinput(user_question)
 
 
