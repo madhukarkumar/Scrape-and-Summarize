@@ -117,7 +117,7 @@ def handle_userinput(user_question):
         prompt = f"The user asked: {user_question}. The most similar text from the documents is: {most_similar_text}"
         
         #print prompt
-        st.write(prompt)
+        #st.write(prompt)
 
         response = st.session_state.conversation({'question': prompt})
         
@@ -173,7 +173,7 @@ def main():
     # Enable the user to ask a question only after the PDFs have been processed
     if st.session_state.conversation:
         if user_question:
-            st.write(user_question)
+            #st.write(user_question)
             handle_userinput(user_question)
 
 
