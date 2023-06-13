@@ -196,8 +196,12 @@ def main():
                 st.session_state.conversation = ConversationalRetrievalChain.from_llm(llm=llm, retriever=vectorstore.as_retriever(), memory=memory)
 
                 st.success('PDFs processed successfully!')
-        if st.button("Truncate Existing Docs"):
+        st.subheader("Maintenance")
+        if st.button("Truncate Existing Documents"):
+
+            ## Code should be added to remove any documents listed in the upload area
             st.write("Truncating...")
+            user_question = None ## Needs updated - trying to remove any questions in the box
             truncate_table()
             if "conversation" not in st.session_state:
                 st.session_state.conversation = None ## unsure if this is needed - was getting odd error
