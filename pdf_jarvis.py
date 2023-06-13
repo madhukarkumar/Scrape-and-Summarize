@@ -115,6 +115,26 @@ def get_most_similar_text(query_text):
 
     return result[0]
 
+def truncate_table():
+    st.write("made it here!")
+
+    # Perform a similarity search against the embeddings
+    stmt = sql_text("""
+        truncate table multiple_pdf_example
+    """)
+
+    ss_password = os.environ.get("SINGLESTORE_PASSWORD")
+    ss_host = os.environ.get("SINGLESTORE_HOST")
+    ss_user = os.environ.get("SINGLESTORE_USER")
+    ss_database = os.environ.get("SINGLESTORE_DATABASE")
+    ss_port = os.environ.get("SINGLESTORE_PORT")
+    connection = db.create_engine(
+        f"mysql+pymysql://{ss_user}:{ss_password}@{ss_host}:{ss_port}/{ss_database}")
+    with connection.begin() as conn:
+        result = conn.execute(stmt)
+    return result
+
+
 
 # new handle_userinput function that uses the SingleStore embeddings table
 def handle_userinput(user_question):
@@ -177,6 +197,9 @@ def main():
                 st.session_state.conversation = ConversationalRetrievalChain.from_llm(llm=llm, retriever=vectorstore.as_retriever(), memory=memory)
 
                 st.success('PDFs processed successfully!')
+        if st.button("Truncate Existing Docs"):
+            st.write("Truncating...")
+            truncate_table()
 
     # Enable the user to ask a question only after the PDFs have been processed
     if st.session_state.conversation:
