@@ -21,9 +21,11 @@ If the scraped data is too long, it will be split into multiple requests to Open
 
 To run the app locally,
 Create a venv with Python 3.9.16
+
 copy .env.sample to .env
+
 update .env file with appropriate information
 
-```pip install -r requirements.text```
+```pip install -r requirements.txt```
 
 ```streamlit run main.py```
