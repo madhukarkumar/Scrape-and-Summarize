@@ -116,7 +116,6 @@ def get_most_similar_text(query_text):
     return result[0]
 
 def truncate_table():
-    st.write("made it here!")
 
     # Perform a similarity search against the embeddings
     stmt = sql_text("""
@@ -200,7 +199,10 @@ def main():
         if st.button("Truncate Existing Docs"):
             st.write("Truncating...")
             truncate_table()
-
+            if "conversation" not in st.session_state:
+                st.session_state.conversation = None ## unsure if this is needed - was getting odd error
+            st.success('Table truncated successfully!')
+            
     # Enable the user to ask a question only after the PDFs have been processed
     if st.session_state.conversation:
         if user_question:
