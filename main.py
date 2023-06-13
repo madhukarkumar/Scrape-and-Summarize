@@ -2,6 +2,7 @@ import streamlit as st
 import requests
 from bs4 import BeautifulSoup
 import openai
+from dotenv import load_dotenv
 from langchain import OpenAI
 from langchain import LLMChain
 from langchain.prompts import PromptTemplate
@@ -11,6 +12,8 @@ from langchain.docstore.document import Document
 from nltk.tokenize import sent_tokenize
 import nltk
 import os
+
+load_dotenv()
 nltk.download('punkt')  # Download the NLTK Punkt tokenizer if it's not already present
 from pdf_jarvis import main as pdf_jarvis_main
 
