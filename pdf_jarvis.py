@@ -47,9 +47,13 @@ def get_vectorstore(text_chunks):
 
 #function that takes a list of text chunks, creates embeddings and inserts them into a table in SingleStore
 def create_embeddings_and_insert(text_chunks):
-    password = os.environ.get("SINGLESTORE_PASSWORD")
+    ss_password = os.environ.get("SINGLESTORE_PASSWORD")
+    ss_host = os.environ.get("SS_HOST")
+    ss_user = os.environ.get("SS_USER")
+    ss_database = os.environ.get("SS_DATABASE")
+    ss_port = os.environ.get("SS_PORT")
     connection = db.create_engine(
-        f"mysql+pymysql://admin:{password}@svc-bdaf1a6b-098e-47a4-97c7-01d3b678e08d-dml.aws-virginia-6.svc.singlestore.com:3306/winter_wikipedia")
+        f"mysql+pymysql://{ss_user}:{ss_password}@{ss_host}:{ss_port}/{ss_database}")
     with connection.begin() as conn:
         # Iterate over the text chunks
         for i, text in enumerate(text_chunks):
@@ -99,9 +103,13 @@ def get_most_similar_text(query_text):
         LIMIT 1
     """)
 
-    password = os.environ.get("SINGLESTORE_PASSWORD")
+    ss_password = os.environ.get("SINGLESTORE_PASSWORD")
+    ss_host = os.environ.get("SS_HOST")
+    ss_user = os.environ.get("SS_USER")
+    ss_database = os.environ.get("SS_DATABASE")
+    ss_port = os.environ.get("SS_PORT")
     connection = db.create_engine(
-        f"mysql+pymysql://admin:{password}@svc-bdaf1a6b-098e-47a4-97c7-01d3b678e08d-dml.aws-virginia-6.svc.singlestore.com:3306/winter_wikipedia")
+        f"mysql+pymysql://{ss_user}:{ss_password}@{ss_host}:{ss_port}/{ss_database}")
     with connection.begin() as conn:
         result = conn.execute(stmt, {"embeddings": str(query_embedding)}).fetchone()
 
