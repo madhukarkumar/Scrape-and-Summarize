@@ -2,3 +2,4 @@ env/
 __pycache__/
 *.pyc
 my_new_env/
+.env
