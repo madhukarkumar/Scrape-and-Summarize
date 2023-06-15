@@ -80,18 +80,19 @@ def main():
             if not url_input:
                 st.error("Please enter a website URL.")
             else:
-                if not extracted_text:
+                with st.spinner("Processing"):
+                    if not extracted_text:
+                        try:
+                            extracted_text = scrape_website(url_input)
+                        except Exception as e:
+                            st.error(f"Error: {e}")
+
                     try:
-                        extracted_text = scrape_website(url_input)
+                        summaries = get_summary(extracted_text)
+                        combined_summary = " ".join(summaries)
+                        st.write(combined_summary)
                     except Exception as e:
                         st.error(f"Error: {e}")
-
-                try:
-                    summaries = get_summary(extracted_text)
-                    combined_summary = " ".join(summaries)
-                    st.write(combined_summary)
-                except Exception as e:
-                    st.error(f"Error: {e}")
 
     elif page == "PDFJarvis":
         pdf_jarvis_main()
